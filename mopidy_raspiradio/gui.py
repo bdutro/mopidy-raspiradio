@@ -5,6 +5,8 @@ from luma.oled.device import ssd1306, ssd1322, ssd1325, ssd1331, sh1106
 from PIL import ImageFont
 
 class Gui(object):
+    __fields = ['title', 'artist', 'album']
+
     def __init__(self, args, font_args):
         self.lcd = None
         self.canvas = None
@@ -12,11 +14,11 @@ class Gui(object):
         
         self.fonts = {}
 
-        for field, font_info in font_args.iteritems():
-            self.fonts[field] = ImageFont.truetype(font=font_info['file'], size=font_info['size'])
+        for field in self.__fields:
+            self.fonts[field] = ImageFont.truetype(font=config[field + '_font_file'], size=config[field + '_font_size'])
 
         parser = cmdline.create_parser('')
-        device_args = parser.parse_args(args)
+        device_args = parser.parse_args(config['lcd_config'].split(' '))
 
         try:
             self.lcd = cmdline.create_device(device_args)
@@ -26,7 +28,7 @@ class Gui(object):
     def do_draw(self):
         with canvas(self.lcd) as draw:
             y_pos = 0
-            for field in ['artist', 'title', 'album']:
+            for field in self.__fields:
                 width, height = self.fonts[field].getsize(self.track_info[field])
                 draw.text((0, y_pos), self.track_info[field], font=self.fonts[field])
                 y_pos += height

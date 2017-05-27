@@ -24,9 +24,13 @@ class Extension(ext.Extension):
 
     def get_config_schema(self):
         schema = super(Extension, self).get_config_schema()
-        # TODO: Comment in and edit, or remove entirely
-        #schema['username'] = config.String()
-        #schema['password'] = config.Secret()
+        schema['artist_font_file'] = config.Path()
+        schema['album_font_file'] = config.Path()
+        schema['track_font_file'] = config.Path()
+        schema['artist_font_size'] = config.Integer()
+        schema['album_font_size'] = config.Integer()
+        schema['track_font_size'] = config.Integer()
+        schema['lcd_config'] = config.String()
         return schema
 
     def setup(self, registry):
