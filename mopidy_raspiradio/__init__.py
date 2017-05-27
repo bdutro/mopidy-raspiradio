@@ -34,15 +34,15 @@ class Extension(ext.Extension):
         # in a single extension.
 
         # TODO: Edit or remove entirely
-        from .frontend import FoobarFrontend
-        registry.add('frontend', FoobarFrontend)
+        from .raspiradio_frontend import RaspiradioFrontend
+        registry.add('frontend', RaspiradioFrontend)
 
         # TODO: Edit or remove entirely
-        from .backend import FoobarBackend
-        registry.add('backend', FoobarBackend)
+        #from .backend import FoobarBackend
+        #registry.add('backend', FoobarBackend)
 
-        # TODO: Edit or remove entirely
-        registry.add('http:static', {
-            'name': self.ext_name,
-            'path': os.path.join(os.path.dirname(__file__), 'static'),
-        })
+        ## TODO: Edit or remove entirely
+        #registry.add('http:static', {
+        #    'name': self.ext_name,
+        #    'path': os.path.join(os.path.dirname(__file__), 'static'),
+        #})
