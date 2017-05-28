@@ -37,7 +37,8 @@ class UpdateInterval(object):
 
     def stop(self):
         self.stop_event.set()
-        self._thread.join()
+        if self._thread is not None:
+            self._thread.join()
 
 class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
     def __init__(self, config, core):
