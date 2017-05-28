@@ -7,7 +7,7 @@ from PIL import ImageFont
 class Gui(object):
     __fields = ['title', 'artist', 'album']
 
-    def __init__(self, args, font_args):
+    def __init__(self, config):
         self.lcd = None
         self.canvas = None
         self.track_info = {}
