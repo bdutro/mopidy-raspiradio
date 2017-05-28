@@ -11,7 +11,7 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
 
         self.gui = Gui(config['raspiradio'])
 
-    def track_playback_started(tl_track):
+    def track_playback_started(self, tl_track):
         track = tl_track.track
         self.gui.set_artist(', '.join(a.name for a in track.artists))
         self.gui.set_album(track.album.name)
