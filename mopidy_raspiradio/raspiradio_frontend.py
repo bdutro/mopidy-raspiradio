@@ -72,7 +72,7 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         self.gui.set_album(track.album.name)
         self.gui.set_title(track.name)
         self.gui.set_track(track.track_no)
-        self.gui.set_track_length(track.length)
+        self.gui.set_track_length(track.length/1000)
         self.set_progress(0, force_redraw=True)
         self.start_position_update()
 
