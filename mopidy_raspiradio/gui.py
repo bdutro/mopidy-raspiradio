@@ -6,6 +6,7 @@ from PIL import ImageFont
 
 class Gui(object):
     __fields = ['title', 'artist', 'album']
+    __progress_padding = 2
     __progress_height = 10
     __progress_width = 5
     __progress_line_width = 2
@@ -20,7 +21,7 @@ class Gui(object):
         
         self.fonts = {}
         self.fonts_y_pos = {}
-        
+
         y_pos = 0
         for field in self.__fields:
             font = ImageFont.truetype(font=config[field + '_font_file'], size=config[field + '_font_size'])
@@ -38,6 +39,7 @@ class Gui(object):
             parser.error(e)
 
         self.lcd_width = device_args.width
+        y_pos += self.__progress_padding
         progress_line_y_pos = y_pos + self.__progress_y_offset
         self.progress_line_extents = [(self.__progress_x_offset, progress_line_y_pos), (self.lcd_width - self.__progress_x_offset, progress_line_y_pos)]
         self.progress_marker_y_extents = (y_pos, y_pos + self.__progress_height)
