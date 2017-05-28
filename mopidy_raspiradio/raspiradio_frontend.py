@@ -58,8 +58,8 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
     def playback_position_update(self):
         progress = self.core.playback.get_time_position().get()
         new_pos = progress/1000
-        if new_pos != cur_pos:
-            cur_pos = new_pos
+        if new_pos != self.cur_pos:
+            self.cur_pos = new_pos
             self.set_progress(progress)
 
     def track_playback_started(self, tl_track):
