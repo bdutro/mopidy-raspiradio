@@ -6,29 +6,41 @@ from mopidy import core
 from gui import Gui
 
 class UpdateThread(Thread):
-    def __init__(self, event, interval, callback):
-        Thread.__init__(self)
-        self.stopped = event
-        self.interval = interval
-        self.callback = callback
+    def __init__(self, interval, function, *args, **kwargs):
+        self._timer     = None
+        self.interval   = interval
+        self.function   = function
+        self.args       = args
+        self.kwargs     = kwargs
+        self.is_running = False
 
-    def run(self):
-        while not self.stopped.wait(self.interval):
-            self.callback()
+    def _run(self):
+        self.is_running = False
+        self.start()
+        self.function(*self.args, **self.kwargs)
+
+    def start(self):
+        if not self.is_running:
+            self._timer = Timer(self.interval, self._run)
+            self._timer.start()
+            self.is_running = True
+
+    def stop(self):
+        self._timer.cancel()
+        self.is_running = False
 
 class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
     def __init__(self, config, core):
         super(RaspiradioFrontend, self).__init__()
         self.core = core
         self.gui = Gui(config['raspiradio'])
-        self.stop_update_flag = Event()
         self.update_thread = UpdateThread(self.stop_update_flag, 1, self.playback_position_update)
-    
+
     def start_position_update(self):
         self.update_thread.start()
 
     def stop_position_update(self):
-        self.stop_update_flag.set()
+        self.update_thread.stop()
 
     def playback_position_update(self):
         self.set_progress(self.core.get_time_position())
