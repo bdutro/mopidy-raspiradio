@@ -1,3 +1,4 @@
+import time
 from luma.core import cmdline, error
 from luma.core.interface.serial import i2c, spi
 from luma.core.render import canvas
@@ -39,8 +40,8 @@ class ProgressBar(object):
     def set_progress(self, progress):
         self.progress = progress
 
-    def format_time(self, time):
-        return time.strftime(self.__time_format, time.gmtime(time))
+    def format_time(self, t):
+        return time.strftime(self.__time_format, time.gmtime(t))
 
     def set_track_length(self, track_length):
         self.track_length = track_length
