@@ -33,8 +33,8 @@ class ProgressBar(object):
             progress_pos = int(round(self.progress * self.scale_factor))
             final_time_str = self.time_str.format(self.format_time(self.progress))
 
-        canvas.line(self.progress_line_extents, width=self.__progress_line_width)
         canvas.line([(progress_pos, self.progress_marker_y_extents[0]), (progress_pos, self.progress_marker_y_extents[1])], width=self.__progress_width)
+        canvas.line(self.progress_line_extents, width=self.__progress_line_width)
         canvas.text((self.__progress_x_offset, self.progress_marker_y_extents[1]), final_time_str, font=self.font)
 
     def set_progress(self, progress):
