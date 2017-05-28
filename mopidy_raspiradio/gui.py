@@ -74,7 +74,7 @@ class Gui(object):
         except error.Error as e:
             parser.error(e)
 
-        self.progress_bar = ProgressBar(y_pos
+        self.progress_bar = ProgressBar(y_pos,
                                         device_args.width,
                                         ImageFont.truetype(font=config['progress_bar_font_file'],
                                                            size=config['progress_bar_font_size']))
