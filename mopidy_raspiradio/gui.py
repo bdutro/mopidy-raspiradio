@@ -182,7 +182,8 @@ class Gui(object):
 
     def set_mode(self, mode):
         self.mode = mode
-        self.cur_ui.on_switch_from()
+        if self.cur_ui is not None:
+            self.cur_ui.on_switch_from()
         self.cur_ui = self.uis[self.mode]
         self.cur_ui.on_switch_to()
 
