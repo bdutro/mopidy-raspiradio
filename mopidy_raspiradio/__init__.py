@@ -31,6 +31,8 @@ class Extension(ext.Extension):
         schema['album_font_size'] = config.Integer()
         schema['title_font_file'] = config.Path()
         schema['title_font_size'] = config.Integer()
+        schema['progress_bar_font_file'] = config.Path()
+        schema['progress_bar_font_size'] = config.Integer()
         schema['lcd_config'] = config.String()
         return schema
 

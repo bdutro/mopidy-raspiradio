@@ -56,11 +56,7 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         self.update_thread.stop()
 
     def playback_position_update(self):
-        progress = self.core.playback.get_time_position().get()
-        new_pos = progress/1000
-        if new_pos != self.cur_pos:
-            self.cur_pos = new_pos
-            self.set_progress(progress)
+        self.set_progress(self.core.playback.get_time_position().get())
 
     def track_playback_started(self, tl_track):
         self.stop_position_update()
@@ -70,27 +66,29 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         self.gui.set_title(track.name)
         self.gui.set_track(track.track_no)
         self.gui.set_track_length(track.length)
-        self.cur_pos = 0
-        self.set_progress(0)
+        self.set_progress(0, force_redraw=True)
         self.start_position_update()
 
     def track_playback_ended(self, tl_track, time_position):
         self.stop_position_update()
-        self.set_progress(time_position)
+        self.set_progress(time_position, force_redraw=True)
 
     def track_playback_paused(self, tl_track, time_position):
         self.stop_position_update()
-        self.set_progress(time_position)
+        self.set_progress(time_position, force_redraw=True)
 
     def track_playback_resumed(self, tl_track, time_position):
-        self.set_progress(time_position)
+        self.set_progress(time_position, force_redraw=True)
         self.start_position_update()
 
     def seeked(self, time_position):
         self.stop_position_update()
-        self.set_progress(time_position)
+        self.set_progress(time_position, force_redraw=True)
         self.start_position_update()
 
-    def set_progress(self, progress):
-        self.gui.set_progress(progress)
-        self.gui.do_draw()
+    def set_progress(self, progress, force_redraw=False):
+        new_pos = progress/1000
+        if new_pos != self.cur_pos or force_redraw:
+            self.cur_pos = new_pos
+            self.gui.set_progress(self.cur_pos)
+            self.gui.do_draw()
