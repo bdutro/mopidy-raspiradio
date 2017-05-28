@@ -26,15 +26,17 @@ class UpdateThread(Thread):
             self.is_running = True
 
     def stop(self):
-        self._timer.cancel()
-        self.is_running = False
+        if self.is_running:
+            self._timer.cancel()
+            self.is_running = False
 
 class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
     def __init__(self, config, core):
         super(RaspiradioFrontend, self).__init__()
         self.core = core
         self.gui = Gui(config['raspiradio'])
-        self.update_thread = UpdateThread(1, self.playback_position_update)
+        self.update_thread = UpdateThread(1.0/config['raspiradio']['refresh_rate'], self.playback_position_update)
+        self.cur_pos = 0
 
     def start_position_update(self):
         self.update_thread.start()
@@ -43,7 +45,11 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         self.update_thread.stop()
 
     def playback_position_update(self):
-        self.set_progress(self.core.get_time_position())
+        progress = self.core.get_time_position()
+        new_pos = progress/1000
+        if new_pos != cur_pos:
+            cur_pos = new_pos
+            self.set_progress(progress)
 
     def track_playback_started(self, tl_track):
         self.stop_position_update()
@@ -53,6 +59,7 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         self.gui.set_title(track.name)
         self.gui.set_track(track.track_no)
         self.gui.set_track_length(track.length)
+        self.cur_pos = 0
         self.set_progress(0)
         self.start_position_update()
 

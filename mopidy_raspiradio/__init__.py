@@ -24,6 +24,7 @@ class Extension(ext.Extension):
 
     def get_config_schema(self):
         schema = super(Extension, self).get_config_schema()
+        schema['refresh_rate'] = config.Integer()
         schema['artist_font_file'] = config.Path()
         schema['artist_font_size'] = config.Integer()
         schema['album_font_file'] = config.Path()
