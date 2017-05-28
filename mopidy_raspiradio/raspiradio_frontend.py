@@ -8,6 +8,7 @@ from gui import Gui
 class UpdateInterval(object):
     class UpdateThread(Thread):
         def __init__(self, stop_event, interval, function, *args, **kwargs):
+            Thread.__init__(self)
             self._timer     = None
             self.interval   = interval
             self.function   = function
