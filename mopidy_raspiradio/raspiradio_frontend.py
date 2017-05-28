@@ -5,7 +5,7 @@ from threading import Timer, Thread, Event
 from mopidy import core
 from gui import Gui
 
-class UpdateThread(Thread):
+class UpdateThread(object):
     def __init__(self, interval, function, *args, **kwargs):
         self._timer     = None
         self.interval   = interval
@@ -45,7 +45,7 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         self.update_thread.stop()
 
     def playback_position_update(self):
-        progress = self.core.get_time_position()
+        progress = self.core.playback.get_time_position()
         new_pos = progress/1000
         if new_pos != cur_pos:
             cur_pos = new_pos
