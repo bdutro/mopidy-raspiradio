@@ -19,7 +19,7 @@ class UpdateInterval(object):
 
         def run(self):
             self.is_running = True
-            while not self.stop_event.is_set(self.interval):
+            while not self.stop_event.wait(self.interval):
                 self.function(*self.args, **self.kwargs)
 
     def __init__(self, interval, function, *args, **kwargs):
