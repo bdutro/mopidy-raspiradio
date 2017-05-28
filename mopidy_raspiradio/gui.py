@@ -88,12 +88,12 @@ class Clock(UI):
     def stop(self):
         self.update_thread.stop()
 
-    def do_draw(self):
-        with canvas(self.lcd) as draw:
+    def draw(self):
+        with canvas(self.lcd) as cvs:
             time_str = self.format_time()
             width, _ = self.font.getsize(time_str)
             x_pos = find_center(self.lcd_width, width)
-            draw.text((x_pos, self.y_pos), time_str, font=self.font)
+            cvs.text((x_pos, self.y_pos), time_str, font=self.font)
 
     def on_switch_to(self):
         self.tick(force_redraw=True)
@@ -130,10 +130,10 @@ class PlaybackDisplay(UI):
         for field in self.__fields:
             draw.text((0, self.fonts_y_pos[field]), self.track_info[field], font=self.fonts[field])
     
-    def do_draw(self):
-        with canvas(self.lcd) as draw:
-            self.draw_trackinfo(draw)
-            self.progress_bar.draw(draw)
+    def draw(self):
+        with canvas(self.lcd) as cvs:
+            self.draw_trackinfo(cvs)
+            self.progress_bar.draw(cvs)
 
     def set_artist(self, artist):
         self.track_info['artist'] = artist

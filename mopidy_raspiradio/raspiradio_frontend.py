@@ -72,4 +72,4 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         if new_pos != self.cur_pos or force_redraw:
             self.cur_pos = new_pos
             self.cur_ui.set_progress(self.cur_pos)
-            self.cur_ui.do_draw()
+            self.cur_ui.draw()
