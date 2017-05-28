@@ -5,18 +5,18 @@ from threading import Timer, Thread, Event
 from mopidy import core
 from gui import Gui
 
+class UpdateThread(Thread):
+    def __init__(self, event, interval, callback):
+        super(Thread, self).__init__()
+        self.stopped = event
+        self.interval = interval
+        self.callback = callback
+
+    def run(self):
+        while not self.stopped.wait(self.interval):
+            self.callback()
+
 class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
-    class UpdateThread(Thread):
-        def __init__(self, event, interval, callback):
-            super(Thread, self).__init__()
-            self.stopped = event
-            self.interval = interval
-            self.callback = callback
-
-        def run(self):
-            while not self.stopped.wait(self.interval):
-                self.callback()
-
     def __init__(self, config, core):
         super(RaspiradioFrontend, self).__init__()
         self.core = core
