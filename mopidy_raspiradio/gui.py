@@ -22,6 +22,7 @@ class ProgressBar(object):
         self.progress_marker_y_extents = (y_pos, y_pos + self.__progress_height)
         self.progress = 0
         self.track_length = None
+        self.scale_factor = None
         self.time_str = '- / -'
 
     def draw(self, canvas):
@@ -29,7 +30,7 @@ class ProgressBar(object):
             progress_pos = 0
             final_time_str = '- / -'
         else:
-            progress_pos = int(round(float(self.progress)/self.track_length*self.lcd_width))
+            progress_pos = int(round(self.progress * self.scale_factor))
             final_time_str = self.time_str.format(self.format_time(self.progress))
 
         canvas.line(self.progress_line_extents, width=self.__progress_line_width)
@@ -44,6 +45,7 @@ class ProgressBar(object):
 
     def set_track_length(self, track_length):
         self.track_length = track_length
+        self.scale_factor = float(self.lcd_width) / self.track_length
         self.time_str = '{} / ' + self.format_time(track_length)
 
 class Gui(object):
