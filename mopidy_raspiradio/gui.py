@@ -21,13 +21,13 @@ class Gui(object):
         self.fonts = {}
         self.fonts_y_pos = {}
         
-        ypos = 0
+        y_pos = 0
         for field in self.__fields:
             font = ImageFont.truetype(font=config[field + '_font_file'], size=config[field + '_font_size'])
             self.fonts[field] = font
-            self.fonts_y_pos[field] = ypos
+            self.fonts_y_pos[field] = y_pos
             _, height = font.getsize('M')
-            ypos += height
+            y_pos += height
 
         parser = cmdline.create_parser('')
         device_args = parser.parse_args(config['lcd_config'].split(' '))
