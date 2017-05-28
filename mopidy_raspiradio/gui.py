@@ -52,10 +52,19 @@ class ProgressBar(object):
 def find_center(total_width, object_width):
     return int(round(float(total_width - object_width) / 2))
 
-class Clock(object):
+class UI(object):
+    def __init__(self, lcd, device_args, config):
+        pass
+    def on_switch_to(self):
+        pass
+    def on_switch_from(self):
+        pass
+
+class Clock(UI):
     __clock_str = '%I:%M %p'
 
     def __init__(self, lcd, device_args, config):
+        UI.__init__(self, lcd, device_args, config)
         self.lcd = lcd
         self.font = ImageFont.truetype(font=config['clock_font_file'], size=config['clock_font_size'])
         self.update_thread = updateinterval.UpdateInterval(1.0/refresh_rate, self.tick)
@@ -67,7 +76,7 @@ class Clock(object):
     def format_time(self):
         return time.strftime(self.__clock_str, time.localtime(self.cur_time))
 
-    def tick(self):
+    def tick(self, force_redraw=False):
         new_time = time.time()
         if new_time != self.cur_time:
             self.cur_time = new_time
@@ -86,9 +95,17 @@ class Clock(object):
             x_pos = find_center(self.lcd_width, width)
             draw.text((x_pos, self.y_pos), time_str, font=self.font)
 
-class PlaybackDisplay(object):
+    def on_switch_to(self):
+        self.tick(force_redraw=True)
+        self.start()
+
+    def on_switch_from(self):
+        self.stop()
+
+class PlaybackDisplay(UI):
     __fields = ['title', 'artist', 'album']
     def __init__(self, lcd, device_args, config):
+        UI.__init__(self, lcd, device_args, config)
         self.lcd = lcd
         self.track_info = {}
         self.progress = 0
@@ -165,7 +182,9 @@ class Gui(object):
 
     def set_mode(self, mode):
         self.mode = mode
+        self.cur_ui.on_switch_from()
         self.cur_ui = self.uis[self.mode]
+        self.cur_ui.on_switch_to()
 
     def get_ui(self):
         return self.cur_ui
