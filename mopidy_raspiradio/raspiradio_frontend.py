@@ -7,7 +7,7 @@ from gui import Gui
 
 class UpdateThread(Thread):
     def __init__(self, event, interval, callback):
-        super(Thread, self).__init__()
+        Thread.__init__(self)
         self.stopped = event
         self.interval = interval
         self.callback = callback
