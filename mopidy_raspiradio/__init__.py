@@ -25,11 +25,11 @@ class Extension(ext.Extension):
     def get_config_schema(self):
         schema = super(Extension, self).get_config_schema()
         schema['artist_font_file'] = config.Path()
-        schema['album_font_file'] = config.Path()
-        schema['track_font_file'] = config.Path()
         schema['artist_font_size'] = config.Integer()
+        schema['album_font_file'] = config.Path()
         schema['album_font_size'] = config.Integer()
-        schema['track_font_size'] = config.Integer()
+        schema['title_font_file'] = config.Path()
+        schema['title_font_size'] = config.Integer()
         schema['lcd_config'] = config.String()
         return schema
 
