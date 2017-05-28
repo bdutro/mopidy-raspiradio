@@ -34,7 +34,7 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         super(RaspiradioFrontend, self).__init__()
         self.core = core
         self.gui = Gui(config['raspiradio'])
-        self.update_thread = UpdateThread(self.stop_update_flag, 1, self.playback_position_update)
+        self.update_thread = UpdateThread(1, self.playback_position_update)
 
     def start_position_update(self):
         self.update_thread.start()
