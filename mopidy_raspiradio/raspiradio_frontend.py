@@ -9,7 +9,7 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         super(RaspiradioFrontend, self).__init__()
         self.core = core
 
-        self.gui = Gui(config)
+        self.gui = Gui(config['raspiradio'])
 
     def track_playback_started(tl_track):
         track = tl_track.track
