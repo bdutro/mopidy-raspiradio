@@ -13,12 +13,11 @@ class ProgressBar(object):
     __progress_y_offset = __progress_height/2
     __time_format = '%M:%S'
 
-    def __init__(self, lcd_width, font):
-        self.lcd_width = lcd_width
+    def __init__(self, y_pos, lcd_width, font):
         self.font = font
         y_pos += self.__progress_padding
         progress_line_y_pos = y_pos + self.__progress_y_offset
-        self.progress_line_extents = [(self.__progress_x_offset, progress_line_y_pos), (self.lcd_width - self.__progress_x_offset, progress_line_y_pos)]
+        self.progress_line_extents = [(self.__progress_x_offset, progress_line_y_pos), (lcd_width - self.__progress_x_offset, progress_line_y_pos)]
         self.progress_marker_y_extents = (y_pos, y_pos + self.__progress_height)
         self.progress = 0
         self.track_length = None
@@ -45,7 +44,7 @@ class ProgressBar(object):
 
     def set_track_length(self, track_length):
         self.track_length = track_length
-        self.scale_factor = float(self.lcd_width) / self.track_length
+        self.scale_factor = float(self.progress_line_extents[1][0]) / self.track_length
         self.time_str = '{} / ' + self.format_time(track_length)
 
 class Gui(object):
@@ -75,7 +74,8 @@ class Gui(object):
         except error.Error as e:
             parser.error(e)
 
-        self.progress_bar = ProgressBar(device_args.width,
+        self.progress_bar = ProgressBar(y_pos
+                                        device_args.width,
                                         ImageFont.truetype(font=config['progress_bar_font_file'],
                                                            size=config['progress_bar_font_size']))
 
