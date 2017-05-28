@@ -67,7 +67,7 @@ class Clock(UI):
         UI.__init__(self, lcd, device_args, config)
         self.lcd = lcd
         self.font = ImageFont.truetype(font=config['clock_font_file'], size=config['clock_font_size'])
-        self.update_thread = updateinterval.UpdateInterval(1.0/refresh_rate, self.tick)
+        self.update_thread = updateinterval.UpdateInterval(1.0/config['refresh_rate'], self.tick)
         self.cur_time = time.time()
         _, height = self.font.get_size(self.format_time())
         self.y_pos = find_center(device_args.height, height)
