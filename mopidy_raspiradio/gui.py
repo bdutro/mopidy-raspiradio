@@ -4,6 +4,7 @@ from luma.core.interface.serial import i2c, spi
 from luma.core.render import canvas
 from luma.oled.device import ssd1306, ssd1322, ssd1325, ssd1331, sh1106
 from PIL import ImageFont
+import updateinterval
 
 class ProgressBar(object):
     __progress_padding = 2
@@ -48,11 +49,47 @@ class ProgressBar(object):
         self.scale_factor = float(self.progress_line_extents[1][0]) / self.track_length
         self.time_str = '{} / ' + self.format_time(track_length)
 
-class Gui(object):
+def find_center(total_width, object_width):
+    return int(round(float(total_width - object_width) / 2))
+
+class Clock(object):
+    __clock_str = '%I:%M %p'
+
+    def __init__(self, lcd, device_args, config):
+        self.lcd = lcd
+        self.font = ImageFont.truetype(font=config['clock_font_file'], size=config['clock_font_size'])
+        self.update_thread = updateinterval.UpdateInterval(1.0/refresh_rate, self.tick)
+        self.cur_time = time.time()
+        _, height = self.font.get_size(self.format_time())
+        self.y_pos = find_center(device_args.height, height)
+        self.lcd_width = device_args.width
+
+    def format_time(self):
+        return time.strftime(self.__clock_str, time.localtime(self.cur_time))
+
+    def tick(self):
+        new_time = time.time()
+        if new_time != self.cur_time:
+            self.cur_time = new_time
+            self.draw()
+
+    def start(self):
+        self.update_thread.start()
+
+    def stop(self):
+        self.update_thread.stop()
+
+    def do_draw(self):
+        with canvas(self.lcd) as draw:
+            time_str = self.format_time()
+            width, _ = self.font.get_size(time_str)
+            x_pos = find_center(self.lcd_width, width)
+            draw.text((x_pos, self.y_pos), time_str, font=self.font)
+
+class PlaybackDisplay(object):
     __fields = ['title', 'artist', 'album']
-    def __init__(self, config):
-        self.lcd = None
-        self.canvas = None
+    def __init__(self, lcd, device_args, config):
+        self.lcd = lcd
         self.track_info = {}
         self.progress = 0
         
@@ -66,14 +103,6 @@ class Gui(object):
             self.fonts_y_pos[field] = y_pos
             _, height = font.getsize('M')
             y_pos += height
-
-        parser = cmdline.create_parser('')
-        device_args = parser.parse_args(config['lcd_config'].split(' '))
-
-        try:
-            self.lcd = cmdline.create_device(device_args)
-        except error.Error as e:
-            parser.error(e)
 
         self.progress_bar = ProgressBar(y_pos,
                                         device_args.width,
@@ -106,3 +135,37 @@ class Gui(object):
 
     def set_progress(self, progress):
         self.progress_bar.set_progress(progress)
+
+class GuiModes:
+    CLOCK = 0
+    PLAYBACK = 1
+
+class Gui(object):
+    __ui_types = { GuiModes.CLOCK: Clock,
+                   GuiModes.PLAYBACK: PlaybackDisplay
+                 }
+    def __init__(self, config):
+        self.mode = None
+        self.uis = {}
+        self.cur_ui = None
+
+        parser = cmdline.create_parser('')
+        device_args = parser.parse_args(config['lcd_config'].split(' '))
+
+        try:
+            lcd = cmdline.create_device(device_args)
+        except error.Error as e:
+            parser.error(e)
+
+        for ui_type, ui_cls in self.__ui_types.iteritems():
+            self.uis[ui_type] = ui_cls(lcd, device_args, config)
+
+    def get_mode(self):
+        return self.mode
+
+    def set_mode(self, mode):
+        self.mode = mode
+        self.cur_ui = self.uis[self.mode]
+
+    def get_ui(self):
+        return self.cur_ui

@@ -1,56 +1,18 @@
 import pykka
 import re
-from threading import Timer, Thread, Event
 
 from mopidy import core
-from gui import Gui
-
-class StopUpdateException(Exception):
-    pass
-
-class UpdateInterval(object):
-    class UpdateThread(Thread):
-        def __init__(self, stop_event, interval, function, *args, **kwargs):
-            Thread.__init__(self)
-            self._timer     = None
-            self.interval   = interval
-            self.function   = function
-            self.args       = args
-            self.kwargs     = kwargs
-            self.stop_event = stop_event
-
-        def run(self):
-            while not self.stop_event.wait(self.interval):
-                try:
-                    self.function(*self.args, **self.kwargs)
-                except StopUpdateException:
-                    break
-
-    def __init__(self, interval, function, *args, **kwargs):
-        self.interval   = interval
-        self.function   = function
-        self.args       = args
-        self.kwargs     = kwargs
-        self.stop_event = Event()
-        self._thread = None
-
-    def start(self):
-        self.stop_event.clear()
-        self._thread = self.UpdateThread(self.stop_event, self.interval, self.function, *self.args, **self.kwargs)
-        self._thread.daemon = True
-        self._thread.start()
-
-    def stop(self):
-        self.stop_event.set()
-        if self._thread is not None:
-            self._thread.join()
+import gui
+import updateinterval
 
 class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
     def __init__(self, config, core):
         super(RaspiradioFrontend, self).__init__()
         self.core = core
-        self.gui = Gui(config['raspiradio'])
-        self.update_thread = UpdateInterval(1.0/config['raspiradio']['refresh_rate'], self.playback_position_update)
+        self.cur_ui = None
+        self.gui = gui.Gui(config['raspiradio'])
+        self.set_gui_mode(gui.GuiModes.CLOCK)
+        self.update_thread = updateinterval.UpdateInterval(1.0/config['raspiradio']['refresh_rate'], self.playback_position_update)
         self.cur_pos = 0
 
     def start_position_update(self):
@@ -63,22 +25,34 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         try:
             self.set_progress(self.core.playback.get_time_position().get())
         except pykka.exceptions.ActorDeadError:
-            raise StopUpdateException
+            raise updateinterval.StopUpdateException
+    
+    def get_gui_mode(self):
+        return self.gui.get_mode()
+
+    def set_gui_mode(self, mode):
+        self.gui.set_mode(mode)
+        self.cur_ui = self.gui.get_ui()
 
     def track_playback_started(self, tl_track):
+        if self.get_gui_mode() != gui.GuiModes.PLAYBACK:
+            self.set_gui_mode(gui.GuiModes.PLAYBACK)
         self.stop_position_update()
         track = tl_track.track
-        self.gui.set_artist(', '.join(a.name for a in track.artists))
-        self.gui.set_album(track.album.name)
-        self.gui.set_title(track.name)
-        self.gui.set_track(track.track_no)
-        self.gui.set_track_length(track.length/1000)
+        self.cur_ui.set_artist(', '.join(a.name for a in track.artists))
+        self.cur_ui.set_album(track.album.name)
+        self.cur_ui.set_title(track.name)
+        self.cur_ui.set_track(track.track_no)
+        self.cur_ui.set_track_length(track.length/1000)
         self.set_progress(0, force_redraw=True)
         self.start_position_update()
 
     def track_playback_ended(self, tl_track, time_position):
-        self.stop_position_update()
-        self.set_progress(time_position, force_redraw=True)
+        if self.core.playback.get_state() == mopidy.core.PlaybackState.STOPPED:
+            self.set_gui_mode(gui.GuiModes.CLOCK)
+        else:
+            self.stop_position_update()
+            self.set_progress(time_position, force_redraw=True)
 
     def track_playback_paused(self, tl_track, time_position):
         self.stop_position_update()
@@ -97,5 +71,5 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         new_pos = progress/1000
         if new_pos != self.cur_pos or force_redraw:
             self.cur_pos = new_pos
-            self.gui.set_progress(self.cur_pos)
-            self.gui.do_draw()
+            self.cur_ui.set_progress(self.cur_pos)
+            self.cur_ui.do_draw()
