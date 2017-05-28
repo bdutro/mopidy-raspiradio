@@ -69,7 +69,7 @@ class Clock(UI):
         self.font = ImageFont.truetype(font=config['clock_font_file'], size=config['clock_font_size'])
         self.update_thread = updateinterval.UpdateInterval(1.0/config['refresh_rate'], self.tick)
         self.cur_time = time.time()
-        _, height = self.font.get_size(self.format_time())
+        _, height = self.font.getsize(self.format_time())
         self.y_pos = find_center(device_args.height, height)
         self.lcd_width = device_args.width
 
@@ -91,7 +91,7 @@ class Clock(UI):
     def do_draw(self):
         with canvas(self.lcd) as draw:
             time_str = self.format_time()
-            width, _ = self.font.get_size(time_str)
+            width, _ = self.font.getsize(time_str)
             x_pos = find_center(self.lcd_width, width)
             draw.text((x_pos, self.y_pos), time_str, font=self.font)
 
