@@ -14,8 +14,7 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         self.set_gui_mode(gui.GuiModes.CLOCK)
         self.update_thread = timers.UpdateInterval(1.0/config['raspiradio']['refresh_rate'], self.playback_position_update)
         self.cur_pos = 0
-        self.timeout_thread = timers.Timeout(config['raspiradio']['inactivity_timeout'], self.set_gui_mode, gui.GuiModes.CLOCK)
-        self.timeout_started = False
+        self.timeout_thread = timers.Timeout(config['raspiradio']['inactivity_timeout'], self.switch_to_clock)
 
     def start_position_update(self):
         self.update_thread.start()
@@ -28,6 +27,9 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
             self.set_progress(self.core.playback.get_time_position().get())
         except pykka.exceptions.ActorDeadError:
             raise timers.StopUpdateException
+    
+    def switch_to_clock(self):
+        self.set_gui_mode(gui.GuiModes.CLOCK)
 
     def get_gui_mode(self):
         return self.gui.get_mode()
