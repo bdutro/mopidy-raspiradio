@@ -3,7 +3,7 @@ import re
 
 from mopidy import core
 import gui
-import updateinterval
+import timers
 
 class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
     def __init__(self, config, core):
@@ -12,8 +12,10 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         self.cur_ui = None
         self.gui = gui.Gui(config['raspiradio'])
         self.set_gui_mode(gui.GuiModes.CLOCK)
-        self.update_thread = updateinterval.UpdateInterval(1.0/config['raspiradio']['refresh_rate'], self.playback_position_update)
+        self.update_thread = timers.UpdateInterval(1.0/config['raspiradio']['refresh_rate'], self.playback_position_update)
         self.cur_pos = 0
+        self.timeout_thread = timers.Timeout(config['raspiradio']['inactivity_timeout'], self.set_gui_mode, gui.GuiModes.CLOCK)
+        self.timeout_started = False
 
     def start_position_update(self):
         self.update_thread.start()
@@ -25,8 +27,8 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         try:
             self.set_progress(self.core.playback.get_time_position().get())
         except pykka.exceptions.ActorDeadError:
-            raise updateinterval.StopUpdateException
-    
+            raise timers.StopUpdateException
+
     def get_gui_mode(self):
         return self.gui.get_mode()
 
@@ -34,9 +36,16 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         self.gui.set_mode(mode)
         self.cur_ui = self.gui.get_ui()
 
-    def track_playback_started(self, tl_track):
+    def start_timeout(self):
+        self.timeout_thread.start()
+
+    def cancel_timeout(self):
+        self.timeout_thread.stop()
         if self.get_gui_mode() != gui.GuiModes.PLAYBACK:
             self.set_gui_mode(gui.GuiModes.PLAYBACK)
+
+    def track_playback_started(self, tl_track):
+        self.cancel_timeout()
         self.stop_position_update()
         track = tl_track.track
         self.cur_ui.set_artist(', '.join(a.name for a in track.artists))
@@ -48,17 +57,17 @@ class RaspiradioFrontend(pykka.ThreadingActor, core.CoreListener):
         self.start_position_update()
 
     def track_playback_ended(self, tl_track, time_position):
-        if self.core.playback.get_state() == mopidy.core.PlaybackState.STOPPED:
-            self.set_gui_mode(gui.GuiModes.CLOCK)
-        else:
-            self.stop_position_update()
-            self.set_progress(time_position, force_redraw=True)
+        self.start_timeout()
+        self.stop_position_update()
+        self.set_progress(time_position, force_redraw=True)
 
     def track_playback_paused(self, tl_track, time_position):
+        self.start_timeout()
         self.stop_position_update()
         self.set_progress(time_position, force_redraw=True)
 
     def track_playback_resumed(self, tl_track, time_position):
+        self.cancel_timeout()
         self.set_progress(time_position, force_redraw=True)
         self.start_position_update()
 

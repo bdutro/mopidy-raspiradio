@@ -35,6 +35,7 @@ class Extension(ext.Extension):
         schema['clock_font_size'] = config.Integer()
         schema['progress_bar_font_file'] = config.Path()
         schema['progress_bar_font_size'] = config.Integer()
+        schema['inactivity_timeout'] = config.Integer()
         schema['lcd_config'] = config.String()
         return schema
 

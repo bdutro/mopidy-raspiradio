@@ -4,7 +4,7 @@ from luma.core.interface.serial import i2c, spi
 from luma.core.render import canvas
 from luma.oled.device import ssd1306, ssd1322, ssd1325, ssd1331, sh1106
 from PIL import ImageFont
-import updateinterval
+import timers
 
 class ProgressBar(object):
     __progress_padding = 2
@@ -67,7 +67,7 @@ class Clock(UI):
         UI.__init__(self, lcd, device_args, config)
         self.lcd = lcd
         self.font = ImageFont.truetype(font=config['clock_font_file'], size=config['clock_font_size'])
-        self.update_thread = updateinterval.UpdateInterval(1.0/config['refresh_rate'], self.tick)
+        self.update_thread = timers.UpdateInterval(1.0/config['refresh_rate'], self.tick)
         self.cur_time = time.time()
         _, height = self.font.getsize(self.format_time())
         self.y_pos = find_center(device_args.height, height)
