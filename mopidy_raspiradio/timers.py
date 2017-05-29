@@ -59,8 +59,10 @@ class Timeout(Timer):
             AbstractTimerThread.__init__(self, stop_event, interval, function, *args, **kwargs)
 
         def run(self):
+            print 'Waiting for {} seconds'.format(self.interval)
             self.stop_event.wait(self.interval)
             self.function(*self.args, **self.kwargs)
+            print 'Done!'
 
     def __init__(self, interval, function, *args, **kwargs):
         Timer.__init__(self, self.TimeoutThread, interval, function, *args, **kwargs)
